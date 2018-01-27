@@ -4,8 +4,18 @@ var square = require('./square');
 var wiki = require('./wiki.js');
 var app = express();
 
+// Node: middleware are called in the order that they are declared
 app.use(logger('dev'));
 console.log('The area of a square with a width of 4 is ' + square.area(4));
+
+var a_middleware_function = function(req, res, next) {
+    console.log("called custom func");
+    next();
+}
+app.use(a_middleware_function);
+app.use('/someroute', a_middleware_function);
+app.get('/', a_middleware_function);
+
 app.get('/', function (req, res) {
     res.send('Hello World!');
 });
