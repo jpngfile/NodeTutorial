@@ -8,6 +8,7 @@ var app = express();
 app.use(logger('dev'));
 console.log('The area of a square with a width of 4 is ' + square.area(4));
 
+// Custom middleware function
 var a_middleware_function = function(req, res, next) {
     console.log("called custom func");
     next();
@@ -16,8 +17,13 @@ app.use(a_middleware_function);
 app.use('/someroute', a_middleware_function);
 app.get('/', a_middleware_function);
 
+// Default hello world welcome page
 app.get('/', function (req, res) {
     res.send('Hello World!');
+});
+
+app.get('/error', function (req, res) {
+    throw "forced error"
 });
 
 app.all('/secret', function(req, res, next) {
@@ -27,6 +33,12 @@ app.all('/secret', function(req, res, next) {
 
 app.use('/wiki', wiki);
 app.use('/media', express.static('public'));
+
+//Handle errors
+app.use(function(err, req, res, next) {
+    console.error(err.stack);
+    res.status(500).send('Something broke!');
+});
 
 app.listen(3000, function() {
     console.log('Example app listening on port 3000!');
