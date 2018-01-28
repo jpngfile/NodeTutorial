@@ -29,9 +29,10 @@ app.use(a_middleware_function);
 app.use('/someroute', a_middleware_function);
 app.get('/', a_middleware_function);
 
+app.set('view engine', 'pug')
 // Default hello world welcome page
 app.get('/', function (req, res) {
-    res.send('Hello World!');
+    res.render('index.pug', {title: 'Hey', message: 'Hello there!' })
 });
 
 app.get('/error', function (req, res) {
