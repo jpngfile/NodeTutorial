@@ -54,3 +54,38 @@ awesome_instance.name = "New cool name";
 awesome_instance.save(function (err) {
     if (err) return handleError(err);
 });
+
+var athleteSchema = new Schema ({
+    name: Number,
+    sport: String,
+    age: Number,
+});
+
+var Athlete = mongoose.model('Athlete', athleteSchema);
+
+// Find all athletes who play tennis, selecting name and age
+// Executes immediately since it has a callback
+Athlete.find({ 'sport': 'Tennis' }, 'name age', function(err, athletes) {
+    if (err) return handleError(err);
+    // athletes contains list of athletes
+})
+
+var query = Athlete.find({ 'sport': 'Tennis' });
+
+query.select('name age');
+query.limit(5);
+query.sort({age: -1 });
+
+query.exec(function (err, athletes) {
+    if (err) return handleError(err);
+})
+// Identical query with extra where query on age
+Athlete.find().where('sport').equals('Tennis'),
+    where('age').gt(17).lt(50).
+    limit(5).
+    sort({ age: -1 }).
+    select('name age'),
+    exec(function (err, athletes) {
+        if (err) return handleError(err)
+    })
+
