@@ -12,13 +12,12 @@ var users = require('./routes/users');
 var app = express();
 
 // Database setup
-var mongoDB = 'mongodb://127.0.0.1/my_database';
+var mongoDB = 'mongodb://jason:123@ds033096.mlab.com:33096/node_tutorial_local_library';
 mongoose.connect(mongoDB, {
-    useMongoClient: true
+//    useMongoClient: true
 });
 mongoose.Promise = global.Promise;
 var db = mongoose.connection;
-
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // view engine setup

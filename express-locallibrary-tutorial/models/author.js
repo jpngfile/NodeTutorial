@@ -1,27 +1,24 @@
-var mongoose = require('mongoose')
-, Schema = mongoose.Schema
-var Story = require('./story.js')
+var mongoose = require('mongoose');
 
-var authorSchema = Schema({
-    name: String,
-    stories: [{ type: Schema.Types.ObjectId, ref: 'Story' }]
+var Schema = mongoose.Schema;
+
+var AuthorSchema = new Schema({
+    first_name: {type: String, required: true, max: 100},
+    family_name: {type: String, required: true, max: 100},
+    date_of_birth: {type: Date},
+    date_of_death: {type: Date},
 });
 
-var Author = mongoose.model('Author', authorSchema);
-
-var bob = new Author({ name: 'Bob Smith' });
-
-bob.save(function (err) {
-    if (err) return handleError(err);
-
-    var story = new Story({
-        title: "Bob goes sledding",
-        author: bob._id
-    });
-
-    story.save(function(err) {
-        if (err) return handleError(err);
-        // Bob has his story
-    });
+AuthorSchema
+.virtual('name')
+.get(function () {
+    return this.familiy_name + ', ' + this.first_name;
 });
 
+AuthorSchema
+.virtual('url')
+.get(function () {
+    return '/catalog/author/' + this._id;
+});
+
+module.exports = mongoose.model('Author', AuthorSchema);
