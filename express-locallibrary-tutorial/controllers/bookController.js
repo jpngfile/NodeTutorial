@@ -25,8 +25,13 @@ exports.book_create_post = function(req, res) {
 };
 
 // Display Book delete form on GET
+exports.book_delete_get = function(req, res) {
+    res.send('Not Implemented: Book delete GET');
+};
+
+// Display Book delete on POST
 exports.book_delete_post = function(req, res) {
-    res.send('Not Implemented: Book delete post');
+    res.send('Not Implemented: Book delete POST');
 };
 
 // Display Book update form on GET
