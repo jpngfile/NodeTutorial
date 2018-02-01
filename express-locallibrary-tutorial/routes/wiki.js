@@ -13,4 +13,9 @@ router.get('/about', function (req, res) {
     res.send('About this wiki');
 })
 
+// Fish pages
+router.get('/.*fish', function (req, res) {
+    res.send('Fish are nice and delicious');
+})
+
 module.exports = router;
