@@ -12,7 +12,7 @@ var AuthorSchema = new Schema({
 AuthorSchema
 .virtual('name')
 .get(function () {
-    return this.familiy_name + ', ' + this.first_name;
+    return this.family_name + ', ' + this.first_name;
 });
 
 AuthorSchema
