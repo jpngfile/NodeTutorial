@@ -166,10 +166,108 @@ exports.book_delete_post = function(req, res) {
 
 // Display Book update form on GET
 exports.book_update_get = function (req, res) {
-    res.send('Not Implemented: Book update GET');
+    
+    // Get book, authors, and genres for form
+    async.parallel({
+        book: function(callback) {
+            Book.findById(req.params.id).populate('author').populate('genre').exec(callback);
+        },
+        authors: function(callback) {
+            Author.find(callback);
+        },
+        genres: function(callback) {
+            Genre.find(callback);
+        },
+    }, function(err, results) {
+        if (err) { return next(err) }
+        if (results.book==null) { // No results
+            var err = new Error('Book not found');
+            err.status = 404;
+            return next(err);
+        }
+        // Success
+        // Mark selected genres as checked
+        for (var i = 0; i < results.genres.length; i++){
+            for (var j = 0; j < results.book.genre.length; j++) {
+                if (results.genres[i]._id.toString()==results.book.genre[j]._id.toString()){
+                    results.genres[i].checked='true';
+                }
+            }
+        }
+        res.render('book_form', { title: 'Update Book', authors: results.authors, genres: results.genres, book: results.book });
+    });
 };
 
 // Handle Book update on POST
-exports.book_update_post = function(req, res) {
-    res.send('Not Implemented: Book update POST');
-};
+exports.book_update_post = [
+    // Convert the genre to an array
+    (req, res, next) => {
+        if (!(req.body.genre instanceof Array)) {
+            if (typeof req.body.genre==='undefined') {
+                req.body.genre=[];
+            } else {
+                req.body.genre = new Array(req.body.genre);
+            }
+        }
+        next()
+    },
+
+    // Validate fields
+    body('title', 'Title must not be empty.').isLength({ min: 1 }).trim(),
+    body('author', 'Author must not be empty.').isLength({ min: 1 }).trim(),
+    body('summary', 'Summary must not be empty.').isLength({ min: 1 }).trim(),
+    body('isbn', 'ISBN must not be empty.').isLength({ min: 1 }).trim(),
+
+    // Sanitize fields (using wildcard)
+    sanitizeBody('title').trim().escape(),
+    sanitizeBody('author').trim().escape(),
+    sanitizeBody('summary').trim().escape(),
+    sanitizeBody('isbn').trim().escape(),
+    sanitizeBody('genre.*').trim().escape(),
+
+    // Process request after validation and sanitization
+    (req, res, next) => {
+
+        // Extract errors
+        const errors = validationResult(req);
+
+        // Create Book object
+        var book = new Book({
+            title: req.body.title,
+            author: req.body.author,
+            summary: req.body.summary,
+            isbn: req.body.isbn,
+            genre: (typeof req.body.genre==='undefined') ? [] : req.body.genre,
+            _id: req.params.id 
+        });
+
+        if (!errors.isEmpty()) {
+            // Render form with errors
+
+            async.parallel({
+                authors: function(callback) {
+                    Author.find(callback)
+                },
+                genres: function(callback) {
+                    Genre.find(callback)
+                },
+            }, function (err, results) {
+                if (err) { return next(err); }
+
+                // Mark selected genres as checked
+                for (let i = 0; i < results.genres.length; i++) {
+                    if (book.genre.indexOf(results.genres[i]._id) > -1) {
+                        results.genres[i].checked='true';
+                    }
+                }
+                res.render('book_form', { title: 'Update Book', authors: results.authors, genres: results.genres, book: book, errors: errors.array() });
+            });
+            return;
+        } else {
+            Book.findByIdAndUpdate(req.params.id, book, {}, function (err, thebook) {
+                if (err) { return next(err) }
+                res.redirect(thebook.url)
+            });
+        }
+    }
+];
