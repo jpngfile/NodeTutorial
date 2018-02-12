@@ -16,7 +16,7 @@ var catalog = require('./routes/catalog.js');
 var app = express();
 
 // Database setup
-var mongoDB = 'mongodb://jason:123@ds033096.mlab.com:33096/node_tutorial_local_library';
+var mongoDB = process.env.MONGODB_URI || 'mongodb://jason:123@ds033096.mlab.com:33096/node_tutorial_local_library';
 mongoose.connect(mongoDB, {
 //    useMongoClient: true
 });
