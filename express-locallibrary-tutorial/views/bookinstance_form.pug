@@ -19,7 +19,7 @@ block content
 
     div.form-group
       label(for='due_back') Date when book available:
-      input#due_back.form-control(type='date' name='due_back' value=(undefined===bookinstance ? '' : bookinstance.due_back))
+      input#due_back.form-control(type='date' name='due_back' value=(undefined===bookinstance ? '' : bookinstance.due_back_form))
 
     div.form-group
       label(for='status') Status:
