@@ -1,59 +1,68 @@
-var express = require("express");
+var express = require('express');
+var path = require('path');
+var favicon = require('serve-favicon');
 var logger = require('morgan');
-var MongoClient = require('mongodb').MongoClient;
-var square = require('./square');
-var wiki = require('./wiki.js');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var mongoose = require('mongoose');
+var compression = require('compression');
+var helmet = require('helmet');
+
+var index = require('./routes/index');
+var users = require('./routes/users');
+var wiki = require('./routes/wiki.js');
+var catalog = require('./routes/catalog.js');
+
 var app = express();
 
-// Node: middleware are called in the order that they are declared
+// Database setup
+var mongoDB = 'mongodb://jason:123@ds033096.mlab.com:33096/node_tutorial_local_library';
+mongoose.connect(mongoDB, {
+//    useMongoClient: true
+});
+mongoose.Promise = global.Promise;
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+// view engine setup
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+// uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
+app.use(helmet());
+app.use(compression());
 app.use(logger('dev'));
-console.log('The area of a square with a width of 4 is ' + square.area(4));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
 
-MongoClient.connect('mongodb://jason:123@ds117128.mlab.com:17128/node_tutorial', function(err, client) {
-    if (err) throw err;
-    
-    var db = client.db('node_tutorial')
-    db.collection('mammals').find().toArray(function(err, result) {
-        if (err) throw err;
-
-        console.log(result);
-        client.close();
-    });
-});
-// Custom middleware function
-var a_middleware_function = function(req, res, next) {
-    console.log("called custom func");
-    next();
-}
-app.use(a_middleware_function);
-app.use('/someroute', a_middleware_function);
-app.get('/', a_middleware_function);
-
-app.set('view engine', 'pug')
-// Default hello world welcome page
-app.get('/', function (req, res) {
-    res.render('index.pug', {title: 'Hey', message: 'Hello there!' })
-});
-
-app.get('/error', function (req, res) {
-    throw "forced error"
-});
-
-app.all('/secret', function(req, res, next) {
-    console.log('Accessing the secret section ...');
-    next();
-});
-
+app.use('/', index);
+app.use('/users', users);
 app.use('/wiki', wiki);
-app.use('/media', express.static('public'));
+app.use('/catalog', catalog);
 
-//Handle errors. Must be after all route calls
-//Node: To access stack trace set environment variable NODE_ENV to 'production'
+app.get('/example', function(req, res) {
+    res.render('example.pug', {title: 'Example pug file'})
+});
+
+// catch 404 and forward to error handler
+app.use(function(req, res, next) {
+  var err = new Error('Not Found');
+  err.status = 404;
+  next(err);
+});
+
+// error handler
 app.use(function(err, req, res, next) {
-    console.error(err.stack);
-    res.status(500).send('Something broke!');
+  // set locals, only providing error in development
+  res.locals.message = err.message;
+  res.locals.error = req.app.get('env') === 'development' ? err : {};
+
+  // render the error page
+  res.status(err.status || 500);
+  res.render('error');
 });
 
-app.listen(3000, function() {
-    console.log('Example app listening on port 3000!');
-});
+module.exports = app;
