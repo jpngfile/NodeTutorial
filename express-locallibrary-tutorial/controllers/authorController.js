@@ -184,10 +184,10 @@ exports.author_update_post = [
                 date_of_death: req.body.date_of_death,
                 _id: req.params.id
             });
-            Author.findByIdAndUpdate(req.params.id, author, {}, (function (err, theauthor) {
+            Author.findByIdAndUpdate(req.params.id, author, {}, function (err, theauthor) {
                 if (err) { return next(err); }
                 res.redirect(theauthor.url);
-            }));
+            });
         }
     }
 ];
