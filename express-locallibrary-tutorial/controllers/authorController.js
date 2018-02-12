@@ -1,6 +1,7 @@
 var Author = require('../models/author');
 var Book = require('../models/book');
 var async = require('async');
+var debug = require('debug')('author');
 const { body,validationResult } = require('express-validator/check');
 const { sanitizeBody } = require('express-validator/filter');
 
@@ -138,7 +139,10 @@ exports.author_update_get = function (req, res) {
             Author.findById(req.params.id).exec(callback)
         },
     }, function(err, results) {
-        if (err) { return next(err) }
+        if (err) { 
+            debug('Update error: ' + err)
+            return next(err) 
+        }
         if (results.author==null) { // No results
             var err = new Error('Author not found');
             err.status = 404;
@@ -173,6 +177,7 @@ exports.author_update_post = [
 
         if (!errors.isEmpty()) {
             // Render form with error messages
+            debug('Update post error: ' + err)
             res.render('author_form', { title: 'Create Author', author: req.body, errors: errors.array() });
             return;
         } else {
